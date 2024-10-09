@@ -21,5 +21,8 @@ def main():
     st.markdown(html_temp, unsafe_allow_html = True)
 
  if st.button("Predict"): 
+
+# 2. Here is where you need to add code to convert the raw xyz data into features
+# hint: use the method features.extract_features. To do this you will need to upload features.py (its on our shared drive) to your github
 features = []
 features.extract_features
