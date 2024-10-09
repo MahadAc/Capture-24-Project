@@ -21,3 +21,5 @@ def main():
     st.markdown(html_temp, unsafe_allow_html = True)
 
  if st.button("Predict"): 
+features = []
+features.extract_features
