@@ -1,0 +1,105 @@
+from google.colab import drive
+drive.mount('/content/drive/')
+import os
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from imblearn.ensemble import BalancedRandomForestClassifier
+from sklearn import decomposition
+from sklearn import preprocessing
+from sklearn import metrics
+from tqdm import tqdm
+
+# For reproducibility
+np.random.seed(42)
+data_directory = '/content/drive/MyDrive/Veritas - Mahad/capture24'
+# Change directory so that we can import local python packages/functions
+os.chdir('/content/drive/MyDrive/Veritas - Mahad')
+import features
+from utils import plot_compare, make_windows
+# Create a function to extract data for any participant
+def extract_data(participant_number):
+  # Load another participant data
+  df = pd.read_csv(data_directory + f"/P{participant_number:03d}.csv.gz",
+  index_col='time', parse_dates=['time'],
+  dtype={'x': 'f4', 'y': 'f4', 'z': 'f4', 'annotation': 'string'})
+  # Simplify annotations
+  df['label'] = (anno_label_dict['label:Willetts2018']
+  .reindex(df['annotation'])
+  .to_numpy())
+  # Extract windows
+  X_values, Y_values = extract_windows(df)
+  # Extract features
+  X_features = pd.DataFrame([features.extract_features(x) for x in X_values])
+  return X_features, Y_values
+anno_label_dict = pd.read_csv(f'{data_directory}/annotation-label-dictionary.csv', index_col = 'annotation', dtype = 'string')
+def extract_windows(data, winsize='10s'):
+    X, Y = [], []
+    for t, w in data.resample(winsize, origin='start'):
+
+        # Check window has no NaNs and is of correct length
+        # 10s @ 100Hz = 1000 ticks
+        if w.isna().any().any() or len(w) != 1000:
+            continue
+
+        x = w[['x', 'y', 'z']].to_numpy()
+        y = w['label'].mode(dropna=False).item()
+
+        X.append(x)
+        Y.append(y)
+
+    X = np.stack(X)
+    Y = np.stack(Y)
+    return X, Y
+def load_raw_data(participant_number):
+  df = pd.read_csv(
+    data_directory + f'/P{participant_number:03d}.csv.gz',
+    index_col='time',
+    parse_dates=['time'],
+    dtype={'x': 'f4', 'y': 'f4', 'z': 'f4', 'annotation': 'string'}
+  )
+  df['label'] = (anno_label_dict['label:Willetts2018'].reindex(df['annotation']).to_numpy())
+  return df
+
+def visualise_model_predictions_for_participant(model_pred_fn, participant_number=None, df=None):
+  if df is None:
+    if participant_number is None:
+      raise ValueError("Must provide either a participant number or a dataframe")
+    else:
+      df = load_raw_data(participant_number)
+  X, Y, T = make_windows(df, winsec=10, label_col="label")
+  X_feats = pd.DataFrame([features.extract_features(x) for x in X])
+  Y_pred = model_pred_fn(X_feats)
+
+  fig, axs = plot_compare(T, Y, Y_pred, trace=X_feats['std'])
+  fig.show()
+for participant_number in tqdm(range(1,151), desc="Extracting features from participant data..."):
+  X_values, Y_values = extract_data(participant_number)
+  X_values.to_csv(f'data/P{participant_number:03d}_features.csv', index=False)
+  np.save(f"data/P{participant_number:03d}_labels.npy", Y_values)
+def load_data(participant_number):
+  X_values = pd.read_csv(f'data/P{participant_number:03d}_features.csv')
+  Y_values = np.load(f"data/P{participant_number:03d}_labels.npy")
+  return X_values, Y_values
+def load_multiple_participants(participant_numbers):
+  X_values = pd.DataFrame()
+  Y_values = np.zeros(0)
+  for participant_number in tqdm(participant_numbers, desc="Loading participant data..."):
+    X_participant, Y_participant = load_data(participant_number)
+    X_values = pd.concat([X_values, X_participant])
+    Y_values = np.concatenate([Y_values, Y_participant])
+  return X_values, Y_values
+train_participant_ids = list(range(1,145))
+train_data, train_labels = load_multiple_participants(train_participant_ids)
+print(train_data.shape, train_labels.shape)
+clf4 = BalancedRandomForestClassifier(
+  n_estimators= 100,
+  replacement=True,
+  sampling_strategy='not minority',
+  n_jobs=4,
+  random_state=42,
+  oob_score=True,
+)
+clf4.fit(train_data, train_labels)
+print('\nClassifier self-performance')
+print(metrics.classification_report(train_labels, clf4.predict(train_data), zero_division=0))
