@@ -6,8 +6,7 @@ import joblib
 import features
 import joblib
 st.file_uploader("accelerometer data", type=None, accept_multiple_files=False, key=None, help=None, on_change=None, args=None, kwargs=None, disabled=False, label_visibility="visible") 
-loaded_othermodel = joblib.load("/content/drive/MyDrive/Veritas - Mahad/random_forrest_model.joblib")
-model = lambda x: 42
+model = joblib.load("random_forrest_model.joblib")
 
 # Create a function to extract data for any participant
 def extract_data(participant_number):
