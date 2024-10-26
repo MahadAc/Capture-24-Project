@@ -24,9 +24,21 @@ def main():
 
     if st.button("Predict"): 
  
-# In Progress From Here
-# 2. Here is where you need to add code to convert the raw xyz data into features
-# hint: use the method features.extract_features. To do this you will need to upload features.py (its on our shared drive) to your github
+# Create a function to extract data for any participant
+def extract_data(participant_number):
+  # Load another participant data
+  df = pd.read_csv(data_directory + f"/P{participant_number:03d}.csv.gz",
+  index_col='time', parse_dates=['time'],
+  dtype={'x': 'f4', 'y': 'f4', 'z': 'f4', 'annotation': 'string'})
+  # Simplify annotations
+  df['label'] = (anno_label_dict['label:Willetts2018']
+  .reindex(df['annotation'])
+  .to_numpy())
+  # Extract windows
+  X_values, Y_values = extract_windows(df)
+  # Extract features
+  X_features = pd.DataFrame([features.extract_features(x) for x in X_values])
+  return X_features, Y_values
 features = []
 features.extract_features
 
