@@ -85,7 +85,7 @@ def extract_data(df):
     return X_features, Y, T
 
 def plot_figure(prediction, T, Y=None):
-    fig, ax = pt.subplots()
+    fig, ax = plt.subplots()
     ax.plot(np.arange(10), np.arange(10)**2)
     return fig, ax
 
