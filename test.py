@@ -6,6 +6,7 @@ import joblib
 import features
 import joblib
 import matplotlib.pyplot as plt
+import tqdm
 
 model = joblib.load("random_forrest_model.joblib")
 
