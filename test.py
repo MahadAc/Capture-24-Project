@@ -5,7 +5,8 @@ import streamlit as st
 import joblib
 import features
 import joblib
-df_upload = st.file_uploader("accelerometer data", type=None, accept_multiple_files=False, key=None, help=None, on_change=None, args=None, kwargs=None, disabled=False, label_visibility="visible") 
+import matplotlib.pyplot as plt
+
 model = joblib.load("random_forrest_model.joblib")
 
 #Create function to extract windows
@@ -96,10 +97,12 @@ def main():
     """
     st.markdown(html_temp, unsafe_allow_html = True)
 
+    df_upload = st.file_uploader("accelerometer data", type=None, accept_multiple_files=False, key=None, help=None, on_change=None, args=None, kwargs=None, disabled=False, label_visibility="visible") 
+    df = pd.read_csv(df_upload)
     if st.button("Predict"): 
         # 4. This is where the model actually makes its predictions
         # You will need to change this to model.predict, once you've setup the 
-        X_features, Y, T = extract_data(df_upload)
+        X_features, Y, T = extract_data(df)
         prediction = model.predict(X_features) 
 
         fig = plot_figure(prediction, T, Y)
