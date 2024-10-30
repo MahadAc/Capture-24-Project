@@ -77,3 +77,4 @@ def plot_compare(t, y_pred, y_true=None, trace=None, min_trace=0, max_trace=1):
                    fancybox=True)
 
     return fig, axs
+
