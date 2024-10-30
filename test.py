@@ -98,10 +98,14 @@ def main():
     st.markdown(html_temp, unsafe_allow_html = True)
 
     df_upload = st.file_uploader("accelerometer data", type=None, accept_multiple_files=False, key=None, help=None, on_change=None, args=None, kwargs=None, disabled=False, label_visibility="visible") 
-    df = pd.read_csv(df_upload)
+
     if st.button("Predict"): 
         # 4. This is where the model actually makes its predictions
         # You will need to change this to model.predict, once you've setup the 
+        if df_upload is not None:
+            df = pd.read_csv(df_upload, index_col='time', parse_dates=['time'], dtype={'x': 'f4', 'y': 'f4', 'z': 'f4', 'annotation': 'string'})
+        else:
+            df = None
         X_features, Y, T = extract_data(df)
         prediction = model.predict(X_features) 
 
