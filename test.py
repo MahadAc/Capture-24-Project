@@ -5,14 +5,18 @@ import streamlit as st
 import joblib
 import features
 import joblib
-df_upload = st.file_uploader("accelerometer data", type=None, accept_multiple_files=False, key=None, help=None, on_change=None, args=None, kwargs=None, disabled=False, label_visibility="visible") 
+import matplotlib.pyplot as plt
+from tqdm import tqdm
+from plotting import plot_compare
+import warnings
+
 model = joblib.load("random_forrest_model.joblib")
 
 #Create function to extract windows
 def make_windows(data, winsec=10, sample_rate=100, dropna=True, verbose=False, label_col='label'):
     X, Y, T = [], [], []
 
-    if label_col not in data.cols:
+    if label_col not in data.columns:
         return_y = False
     else:
         return_y = True
@@ -83,7 +87,7 @@ def extract_data(df):
     return X_features, Y, T
 
 def plot_figure(prediction, T, Y=None):
-    fig, ax = pt.subplots()
+    fig, ax = plt.subplots()
     ax.plot(np.arange(10), np.arange(10)**2)
     return fig, ax
 
@@ -96,13 +100,24 @@ def main():
     """
     st.markdown(html_temp, unsafe_allow_html = True)
 
+    df_upload = st.file_uploader("accelerometer data", type=None, accept_multiple_files=False, key=None, help=None, on_change=None, args=None, kwargs=None, disabled=False, label_visibility="visible") 
+
     if st.button("Predict"): 
         # 4. This is where the model actually makes its predictions
         # You will need to change this to model.predict, once you've setup the 
-        X_features, Y, T = extract_data(df_upload)
-        prediction = model.predict(X_features) 
+        if df_upload is not None:
+            with st.spinner('Loading data...'):
+                df = pd.read_csv(df_upload, index_col='time', parse_dates=['time'], dtype={'x': 'f4', 'y': 'f4', 'z': 'f4', 'annotation': 'string'}, compression="gzip")
+        else:
+            df = None
+        with st.spinner('Extracting features...'):
+            X_features, Y, T = extract_data(df)
+            
+        with st.spinner('Running model...'):
+            prediction = model.predict(X_features) 
 
-        fig = plot_figure(prediction, T, Y)
+        with st.spinner('Creating figure...'):
+            fig, ax = plot_compare(T, prediction, y_true=Y, trace=X_features['std'])
         st.pyplot(fig=fig)
 
 
