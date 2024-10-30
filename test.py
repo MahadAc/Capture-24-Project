@@ -115,7 +115,7 @@ def main():
             prediction = model.predict(X_features) 
 
         with st.spinner('Creating figure...'):
-            fig = plot_figure(prediction, T, Y)
+            fig, ax = plot_figure(prediction, T, Y)
         st.pyplot(fig=fig)
 
 
