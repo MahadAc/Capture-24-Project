@@ -7,6 +7,7 @@ import features
 import joblib
 import matplotlib.pyplot as plt
 from tqdm import tqdm
+from plotting import plot_compare
 
 model = joblib.load("random_forrest_model.joblib")
 
@@ -115,7 +116,7 @@ def main():
             prediction = model.predict(X_features) 
 
         with st.spinner('Creating figure...'):
-            fig, ax = plot_figure(prediction, T, Y)
+            fig, ax = plot_compare(T, prediction, y_true=Y, trace=X_features['std'])
         st.pyplot(fig=fig)
 
 
