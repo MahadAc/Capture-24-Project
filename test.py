@@ -103,7 +103,7 @@ def main():
         # 4. This is where the model actually makes its predictions
         # You will need to change this to model.predict, once you've setup the 
         if df_upload is not None:
-            df = pd.read_csv(df_upload, index_col='time', parse_dates=['time'], dtype={'x': 'f4', 'y': 'f4', 'z': 'f4', 'annotation': 'string'})
+            df = pd.read_csv(df_upload.read(), index_col='time', parse_dates=['time'], dtype={'x': 'f4', 'y': 'f4', 'z': 'f4', 'annotation': 'string'})
         else:
             df = None
         X_features, Y, T = extract_data(df)
