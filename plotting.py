@@ -1,6 +1,8 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
+import matplotlib as mpl
+import matplotlib.patches as mpatches
 
 def plot_compare(t, y_pred, y_true=None, trace=None, min_trace=0, max_trace=1):
     if y_true is None:
