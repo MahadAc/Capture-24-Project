@@ -13,7 +13,7 @@ model = joblib.load("random_forrest_model.joblib")
 def make_windows(data, winsec=10, sample_rate=100, dropna=True, verbose=False, label_col='label'):
     X, Y, T = [], [], []
 
-    if label_col not in data.cols:
+    if label_col not in data.columns:
         return_y = False
     else:
         return_y = True
@@ -106,10 +106,14 @@ def main():
             df = pd.read_csv(df_upload, index_col='time', parse_dates=['time'], dtype={'x': 'f4', 'y': 'f4', 'z': 'f4', 'annotation': 'string'}, compression="gzip")
         else:
             df = None
-        X_features, Y, T = extract_data(df)
-        prediction = model.predict(X_features) 
+        with st.spinner('Extracting features...'):
+            X_features, Y, T = extract_data(df)
+            
+        with st.spinner('Running model...'):
+            prediction = model.predict(X_features) 
 
-        fig = plot_figure(prediction, T, Y)
+        with st.spinner('Creating figure...'):
+            fig = plot_figure(prediction, T, Y)
         st.pyplot(fig=fig)
 
 
