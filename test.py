@@ -8,6 +8,7 @@ import joblib
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 from plotting import plot_compare
+import warnings
 
 model = joblib.load("random_forrest_model.joblib")
 
